@@ -186,36 +186,28 @@ class ExcelProcessor:
                 self._copy_sheet_structure(wb.worksheets[0], sheet)
 
         start_col = self._find_first_empty_column(sheet)
-        start_col_idx = column_index_from_string(start_col)
         
-        # Собираем уникальные колонки (без привязки к листу)
-        unique_columns = set(data_columns.values())
+        for sheet_name in wb.sheetnames:
+            if sheet_name in self.common["education"]["output_sheets"].values():
+                try:
+                    header = wb[sheet_name][f"{start_col}1"].value
+                    if header:
+                        sheet[f"{start_col}1"].value = f"Итого {header}"
+                        break
+                except:
+                    continue
+        else:
+            sheet[f"{start_col}1"].value = "Итого"
 
-        for col_offset, source_col in enumerate(sorted(unique_columns)):
-            current_col = get_column_letter(start_col_idx + col_offset)
-            
-            # Берем первый попавшийся заголовок для этой колонки
-            for sheet_name in wb.sheetnames:
-                if sheet_name in self.common["education"]["output_sheets"].values():
-                    try:
-                        header = wb[sheet_name][f"{source_col}1"].value
-                        if header:
-                            sheet[f"{current_col}1"].value = f"Итого {header}"
-                            break
-                    except:
-                        continue
-            else:
-                sheet[f"{current_col}1"].value = "Итого"
+        last_row = sheet.max_row
+        for row in range(2, last_row + 1):
+            sum_parts = []
+            for level_sheet_name in self.common["education"]["output_sheets"].values():
+                if level_sheet_name in wb.sheetnames:
+                    sum_parts.append(f"'{level_sheet_name}'!{start_col}{row}")
 
-            last_row = sheet.max_row
-            for row in range(2, last_row + 1):
-                sum_parts = []
-                for level_sheet_name in self.common["education"]["output_sheets"].values():
-                    if level_sheet_name in wb.sheetnames:
-                        sum_parts.append(f"'{level_sheet_name}'!{source_col}{row}")
-
-                if sum_parts:
-                    sheet[f"{current_col}{row}"].value = f"=SUM({','.join(sum_parts)})"
+            if sum_parts:
+                sheet[f"{start_col}{row}"].value = f"=SUM({','.join(sum_parts)})"
 
     def _load_template_workbook(self):
         """Загружает шаблон"""
