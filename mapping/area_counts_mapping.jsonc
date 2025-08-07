@@ -1,16 +1,16 @@
 {
     "common": {
         "education": {
-            "column": "B",
+            "column": "B", // № строки
             "codes": {
                 "bak": 1,
-                "mag": 2,
-                "spec": 3
+                "spec": 2,
+                "mag": 3
             },
             "output_sheets": {
                 "bak": "Бак_направления",
-                "mag": "Магистратура_направления",
                 "spec": "Специалитет_направления",
+                "mag": "Магистратура_направления",
                 "total": "Всего_направления"
             }
         },
@@ -28,11 +28,10 @@
     
     // Годовые параметры
     "2024": {
-        "education": "B", //col in donor
-        "funcs": {  // !!добавить опцию для оборачивания нанов
+        "funcs": {
             "out_of_quota": {
                 "actual_name": "Р2_1_1",
-                "array": "$A$12:$W$467",
+                "array": "$A$12:$W$600",
                 "row_num": {
                     "lookup_value": "B2",  //col in recipient
                     "looup_array": "D",   //col in donor
@@ -46,19 +45,281 @@
             },
             "quota": {
                 "actual_name": "Р2_1_1",
-                "array": "$A$9:$W$467",
+                "array": "$A$9:$W$600",
                 "row_num": {
                     "lookup_value": "B2",
                     "looup_array": "D",
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 65,
+                    "lookup_value": 19,
                     "looup_array": 9,
                     "match_type": 0
                 }
             }
         }
+    },
+    "2023": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "$A$12:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "D",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 65,
+                    "looup_array": 12,
+                    "match_type": 0
+                }
+            },
+            "quota": {
+                "array": "$A$9:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19,
+                    "looup_array": 9,
+                    "match_type": 0
+                }
+            }
+        }
+    },
+    "2022": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "$A$12:$W$600", 
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "D",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 64, //changed
+                    "looup_array": 12,
+                    "match_type": 0
+                }
+            },
+            "quota": {
+                "array": "$A$9:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19,
+                    "looup_array": 9,
+                    "match_type": 0
+                }
+            }
+        }
+    },
+    "2021": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "$A$12:$W$600", //changed, same with 2022
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "D",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 64, //changed, same with 2022
+                    "looup_array": 12,
+                    "match_type": 0
+                }
+            },
+            "quota": {
+                "array": "$A$9:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19,
+                    "looup_array": 9,
+                    "match_type": 0
+                }
+            }
+        }
+    },
+    "2020": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "None", //changed
+                "row_num": {
+                },
+                "columns_num": {
+                }
+            },
+            "quota": {
+                "array": "$A$8:$W$600", //changed
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19,
+                    "looup_array": 8, //changed
+                    "match_type": 0
+                }
+            }
+        }
+    },
+    "2019": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "None", //changed, same with 2020
+                "row_num": {
+                },
+                "columns_num": {
+                }
+            },
+            "quota": {
+                "array": "$A$8:$W$600", //changed, same with 2020
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19,
+                    "looup_array": 8, //changed, same with 2020
+                    "match_type": 0
+                }
+            }
+        }
+    },
+    "2018": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "None", //changed, same with 2020
+                "row_num": {
+                },
+                "columns_num": {
+                }
+            },
+            "quota": {
+                "array": "$A$8:$W$600", //changed, same with 2020
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19,
+                    "looup_array": 8, //changed, same with 2020
+                    "match_type": 0
+                }
+            }
+        }
+    },
+    "2017": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "None", //changed, same with 2020
+                "row_num": {
+                },
+                "columns_num": {
+                }
+            },
+            "quota": {
+                "array": "$A$8:$W$600", //changed, same with 2020
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19,
+                    "looup_array": 8, //changed, same with 2020
+                    "match_type": 0
+                }
+            }
+        }
+    },
+    "2016": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "None", //changed, same with 2020
+                "row_num": {
+                },
+                "columns_num": {
+                }
+            },
+            "quota": {
+                "actual_name": "Р2_1_5 (3)",
+                "array": "$A$9:$W$600", //changed, same with 2024
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 40, //changed
+                    "looup_array": 9, //changed, same with 2024
+                    "match_type": 0
+                }
+            }
+        }
+    },
+    "2015": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "None", //changed, same with 2020
+                "row_num": {
+                },
+                "columns_num": {
+                }
+            },
+            "quota": {
+                "actual_name": "Р2_1_4",
+                "array": "$A$9:$W$1000", //changed, too many rows
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19, //changed, same with 2024
+                    "looup_array": 9, //changed, same with 2024
+                    "match_type": 0
+                }
+            }
+        }
+    },
+    "2014": {
+        "funcs": {
+            "out_of_quota": {
+                "array": "None", //changed, same with 2020
+                "row_num": {
+                },
+                "columns_num": {
+                }
+            },
+            "quota": {
+                "actual_name": "Р2_1_4",
+                "array": "$A$9:$W$1200", //changed, too many rows
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19, //changed, same with 2024
+                    "looup_array": 9, //changed, same with 2024
+                    "match_type": 0
+                }
+            }
+        }
     }
+
 }
     
