@@ -45,16 +45,34 @@ class ExcelProcessor:
         :param include_optional: Включать optional-файлы
         """
         years_to_process = self._get_years_to_process(selected_years)
-        
-        for year in years_to_process:
-            year_dir = os.path.join(input_dir, "VPO_1_"+str(year))
-            print(f"Обработка года: {year}, название папки/архива: {year_dir}")
-            
-            files = self._find_files(year_dir, include_optional)
-            print(f"Найдено файлов для обработки: {len(files)}")
-            
-            for file_path in files:
-                self._process_file(file_path, year)
+
+        try:
+            for year in years_to_process:
+                year_dir = os.path.join(input_dir, "VPO_1_"+str(year))
+                print(f"Обработка года: {year}, название папки/архива: {year_dir}")
+                
+                files = self._find_files(year_dir, include_optional)
+                print(f"Найдено файлов для обработки: {len(files)}")
+
+                output_path = self._get_output_path(year)
+
+                # 1. Загружаем шаблон
+                template_wb = self._load_template_workbook()
+
+                # 2. Создаём новую книгу с листами из шаблона
+                new_wb = self._create_new_workbook_with_template_sheets(template_wb)
+                
+                for file_path in files:
+                    # 3. Обрабатываем данные и заполняем листы
+                    data_columns = self._process_data_for_year(new_wb, file_path, year)
+                    # 4. Создаём итоговый лист
+                    self._create_summary_sheet(new_wb, data_columns)
+
+                # 5. Сохраняем
+                self._save_workbook(new_wb, output_path)
+        except Exception as e:
+            print(f"Критическая ошибка при обработке файла: {str(e)}")
+            raise
 
     def _get_years_to_process(self, selected_years: Union[List[str], str]) -> List[str]:
         """Определяет какие годы нужно обработать"""
@@ -104,10 +122,10 @@ class ExcelProcessor:
             
             return optional_ok
 
-    def _get_output_path(self, source_file_path: str, year: str) -> str:
+    def _get_output_path(self, year: str) -> str:
         """Генерирует путь для выходного файла"""
-        source_name = Path(source_file_path).stem
-        output_name = f"{year}_{source_name}_output.xlsx"
+        source_name = Path(self.template_path).stem.split("_")[:-1]
+        output_name = f"{year}_{"_".join(source_name)}.xlsx"
         return os.path.join(self.output_dir, output_name)
 
     def _find_first_empty_column(self, sheet) -> str:
@@ -164,20 +182,30 @@ class ExcelProcessor:
             sheet = wb["Итоги"]
         else:
             sheet = wb.create_sheet("Итоги")
-            # Копируем структуру с первого листа
             if wb.sheetnames[0] != "Итоги":
                 self._copy_sheet_structure(wb.worksheets[0], sheet)
 
         start_col = self._find_first_empty_column(sheet)
         start_col_idx = column_index_from_string(start_col)
+        
+        # Собираем уникальные колонки (без привязки к листу)
+        unique_columns = set(data_columns.values())
 
-        for col_offset, (source_sheet_name, source_col) in enumerate(data_columns.items()):
+        for col_offset, source_col in enumerate(sorted(unique_columns)):
             current_col = get_column_letter(start_col_idx + col_offset)
-            try:
-                header = wb[source_sheet_name][f"{source_col}1"].value
-                sheet[f"{current_col}1"].value = f"Итого {header}" if header else f"Итого {source_sheet_name}"
-            except:
-                sheet[f"{current_col}1"].value = f"Итого {source_sheet_name}"
+            
+            # Берем первый попавшийся заголовок для этой колонки
+            for sheet_name in wb.sheetnames:
+                if sheet_name in self.common["education"]["output_sheets"].values():
+                    try:
+                        header = wb[sheet_name][f"{source_col}1"].value
+                        if header:
+                            sheet[f"{current_col}1"].value = f"Итого {header}"
+                            break
+                    except:
+                        continue
+            else:
+                sheet[f"{current_col}1"].value = "Итого"
 
             last_row = sheet.max_row
             for row in range(2, last_row + 1):
@@ -283,7 +311,7 @@ class ExcelProcessor:
                     source_file_path=source_file_path,
                     sheet_name=sheet_name,
                     params=params,
-                    recipient_file_path=os.path.join(self.output_dir, f"{year}_output.xlsx"),
+                    recipient_file_path=self._get_output_path(year),
                     level_code=level_code  # ← передаём код уровня
                 )
 
@@ -339,7 +367,7 @@ class ExcelProcessor:
 
     def _process_file(self, source_file_path: str, year: str) -> None:
         """Основной метод обработки файла"""
-        output_path = self._get_output_path(source_file_path, year)
+        output_path = self._get_output_path(year)
 
         try:
             # 1. Загружаем шаблон
