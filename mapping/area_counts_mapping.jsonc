@@ -1,0 +1,64 @@
+{
+    "common": {
+        "education": {
+            "column": "B",
+            "codes": {
+                "bak": 1,
+                "mag": 2,
+                "spec": 3
+            },
+            "output_sheets": {
+                "bak": "Бак_направления",
+                "mag": "Магистратура_направления",
+                "spec": "Специалитет_направления",
+                "total": "Всего_направления"
+            }
+        },
+        
+        "search_patterns": {
+            "required": ["Москва", "СВОД_ВПО1"],
+            "optional": ["заочная"] //"заочная", "очная", "очно-заочная" !! можно сделать точный метч
+        },
+
+        "cols_aliases": {
+            "out_of_quota": "Р2_1_2 (4)",  
+            "quota": "Р2_1_5 (2)"
+        }
+    },
+    
+    // Годовые параметры
+    "2024": {
+        "education": "B", //col in donor
+        "funcs": {  // !!добавить опцию для оборачивания нанов
+            "out_of_quota": {
+                "actual_name": "Р2_1_1",
+                "array": "$A$12:$W$467",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "D",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 65,
+                    "looup_array": 12,
+                    "match_type": 0
+                }
+            },
+            "quota": {
+                "actual_name": "Р2_1_1",
+                "array": "$A$9:$W$467",
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "D",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 65,
+                    "looup_array": 9,
+                    "match_type": 0
+                }
+            }
+        }
+    }
+}
+    
