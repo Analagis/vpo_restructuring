@@ -228,6 +228,23 @@ class ExcelProcessor:
 
         return new_wb
 
+    def _nan_error_handle_(self, base_formula: str, 
+                     handle_nan: bool = True, 
+                     handle_errors: bool = False,
+                     nan_replacement: str|int = 0,
+                     error_replacement: str|int = "#N/A") -> str:
+        formula = base_formula
+    
+        # Обработка NaN
+        if handle_nan:
+            formula = f"IFNA({formula}, {nan_replacement})"
+        
+        # Обработка ошибок (поверх обработки NaN)
+        if handle_errors:
+            formula = f"IFERROR({formula}, {error_replacement})"
+        
+        return formula
+
     def _generate_formulas(self, source_file_path: str, sheet_name: str, params: Dict, recipient_file_path: str, level_code: int) -> Dict:
         """
         Генерирует формулу с фильтрацией по level_code (например, B=01)
@@ -278,13 +295,13 @@ class ExcelProcessor:
         col_match = f"MATCH({col_params['lookup_value']},{header_row_range},{col_params['match_type']})"
 
         # Финальная формула
-        formula = f"=INDEX({full_ref}{array},{aggregate_part},{col_match})"
+        formula = f"INDEX({full_ref}{array},{aggregate_part},{col_match})"
 
         params["full_ref"] = full_ref
         params["row_condition"] = row_params['lookup_value']
         params["sheet_name"] = sheet_name
         return {
-            "formula": formula,
+            "formula": f"={self._nan_error_handle_(formula)}",
             "params": params
         }
 
