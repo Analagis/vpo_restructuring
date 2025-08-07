@@ -229,15 +229,9 @@ class ExcelProcessor:
         return new_wb
 
     def _nan_error_handle_(self, base_formula: str, 
-                     handle_nan: bool = True, 
-                     handle_errors: bool = False,
-                     nan_replacement: str|int = 0,
-                     error_replacement: str|int = "#N/A") -> str:
+                     handle_errors: bool = True,
+                     error_replacement: str|int = 0) -> str:
         formula = base_formula
-    
-        # Обработка NaN
-        if handle_nan:
-            formula = f"IFNA({formula}, {nan_replacement})"
         
         # Обработка ошибок (поверх обработки NaN)
         if handle_errors:
@@ -253,14 +247,15 @@ class ExcelProcessor:
         abs_source = os.path.abspath(source_file_path)
         abs_recipient_dir = os.path.dirname(os.path.abspath(recipient_file_path))
         rel_path = os.path.relpath(os.path.dirname(abs_source), abs_recipient_dir).replace('\\', '/')
-
+        
+        abs_source_dir = os.path.dirname(abs_source)
         filename = os.path.basename(abs_source)
 
         # Формируем ссылку на лист
-        if rel_path == ".":
+        if abs_source_dir == ".":
             sheet_ref = f"[{filename}]{sheet_name}"
         else:
-            sheet_ref = f"{rel_path}/[{filename}]{sheet_name}"
+            sheet_ref = f"{abs_source_dir}/[{filename}]{sheet_name}"
         full_ref = f"'{sheet_ref}'!"
 
         array = params["array"]  # например, $A$12:$W$467
@@ -285,10 +280,11 @@ class ExcelProcessor:
 
         # AGGREGATE для поиска строки с учётом level_code
         aggregate_part = (
-            f"MATCH(1,"
-            f"({key_col_range}={row_params['lookup_value']})*"
-            f"({edu_col_range}={level_code}),"
-            f"0)"
+        f"SUMPRODUCT(MAX("
+        f"({key_col_range}={row_params['lookup_value']})*"
+        f"({edu_col_range}={level_code})*"
+        f"ROW({key_col_range})"
+        f"))-{start_row-1}"
         )
 
         # Номер столбца
