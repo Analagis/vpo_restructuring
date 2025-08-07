@@ -68,6 +68,8 @@ class ExcelProcessor:
                     # 4. Создаём итоговый лист
                     self._create_summary_sheet(new_wb, data_columns)
 
+                # 5. Удаляем лист-шаблон
+                self._remove_sheet(new_wb)
                 # 5. Сохраняем
                 self._save_workbook(new_wb, output_path)
         except Exception as e:
@@ -324,6 +326,27 @@ class ExcelProcessor:
 
         return data_columns
 
+    def _remove_sheet(self, wb, sheet_reference: Union[str, int] = 0) -> None:
+        """
+        Удаляет лист из рабочей книги по названию или индексу
+        
+        :param wb: Рабочая книга (openpyxl.workbook.Workbook)
+        :param sheet_reference: Название листа или его индекс (начиная с 0)
+        """
+        try:
+            if isinstance(sheet_reference, str):
+                # Удаление по названию
+                if sheet_reference in wb.sheetnames:
+                    sheet = wb[sheet_reference]
+                    wb.remove(sheet)
+            elif isinstance(sheet_reference, int):
+                # Удаление по индексу
+                if 0 <= sheet_reference < len(wb.sheetnames):
+                    sheet = wb.worksheets[sheet_reference]
+                    wb.remove(sheet)
+        except Exception as e:
+            print(f"Ошибка при удалении листа: {str(e)}")
+
     def _save_workbook(self, wb, output_path: str):
         """Сохраняет книгу"""
         try:
@@ -356,36 +379,3 @@ class ExcelProcessor:
         """
 
         subprocess.run(["powershell", "-Command", ps_script], shell=True)
-
-    def _process_file(self, source_file_path: str, year: str) -> None:
-        """Основной метод обработки файла"""
-        output_path = self._get_output_path(year)
-
-        try:
-            # 1. Загружаем шаблон
-            template_wb = self._load_template_workbook()
-
-            # 2. Создаём новую книгу с листами из шаблона
-            new_wb = self._create_new_workbook_with_template_sheets(template_wb)
-
-            # 3. Обрабатываем данные и заполняем листы
-            data_columns = self._process_data_for_year(new_wb, source_file_path, year)
-            
-            # 4. Создаём итоговый лист
-            self._create_summary_sheet(new_wb, data_columns)
-
-            # 5. Сохраняем
-            self._save_workbook(new_wb, output_path)
-
-            #6. Чистим от собак @
-            #self._delete_dogs(output_path)
-
-        except Exception as e:
-            print(f"Критическая ошибка при обработке файла: {str(e)}")
-            raise
-
-        finally:
-            # openpyxl не требует "закрытия" приложения
-            pass
-
-    
