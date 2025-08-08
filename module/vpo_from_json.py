@@ -239,15 +239,12 @@ class ExcelProcessor:
         
         return formula
 
-    def _generate_formulas(self, source_file_path: str, sheet_name: str, params: Dict, recipient_file_path: str, level_code: int) -> Dict:
+    def _generate_formulas(self, source_file_path: str, sheet_name: str, params: Dict, level_code: int) -> Dict:
         """
         Генерирует формулу с фильтрацией по level_code (например, B=01)
         """
-        # Получаем относительный путь
+        # Получаем путь
         abs_source = os.path.abspath(source_file_path)
-        abs_recipient_dir = os.path.dirname(os.path.abspath(recipient_file_path))
-        rel_path = os.path.relpath(os.path.dirname(abs_source), abs_recipient_dir).replace('\\', '/')
-        
         abs_source_dir = os.path.dirname(abs_source)
         filename = os.path.basename(abs_source)
 
@@ -318,7 +315,6 @@ class ExcelProcessor:
                     source_file_path=source_file_path,
                     sheet_name=sheet_name,
                     params=params,
-                    recipient_file_path=self._get_output_path(year),
                     level_code=level_code  # ← передаём код уровня
                 )
 
