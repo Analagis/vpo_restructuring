@@ -10,11 +10,12 @@
             "output_sheets": {
                 "bak": "Бак_направления",
                 "spec": "Специалитет_направления",
-                "mag": "Магистратура_направления",
-                "total": "Всего_направления"
+                "mag": "Магистратура_направления"
             }
         },
-        
+
+        "summary_sheet": "Всего_направления", //None if not needed
+
         "search_patterns": {
             "required": ["Москва", "СВОД_ВПО1"],
             "optional": ["заочная"] //"заочная", "очная", "очно-заочная" !! можно сделать точный метч
@@ -23,14 +24,15 @@
         "cols_aliases": {
             "out_of_quota": "Р2_1_2 (4)",  
             "quota": "Р2_1_5 (2)"
-        }
+        },
+
+        "checking_list_existence": "False" // turning on slows down work a little bit
     },
     
     // Годовые параметры
     "2024": {
         "funcs": {
             "out_of_quota": {
-                "actual_name": "Р2_1_1",
                 "array": "$A$12:$W$600",
                 "row_num": {
                     "lookup_value": "B2",  //col in recipient
@@ -44,7 +46,6 @@
                 }
             },
             "quota": {
-                "actual_name": "Р2_1_1",
                 "array": "$A$9:$W$600",
                 "row_num": {
                     "lookup_value": "B2",
