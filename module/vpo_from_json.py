@@ -5,11 +5,6 @@ from pathlib import Path
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter, column_index_from_string
 from typing import Union, List, Dict, Optional
-import psutil
-import time
-from contextlib import contextmanager
-import win32com.client as win32
-import re
 import pandas as pd
 
 class ExcelProcessor:
@@ -31,6 +26,7 @@ class ExcelProcessor:
         self.template_path = template_path or os.path.join(
             os.path.dirname(__file__), "templates", "template.xlsx"
         )
+        self.first_col_after_template = None
         self.output_dir = output_dir or os.path.join(
             os.path.dirname(os.path.dirname(__file__)), "created_files"
         )
@@ -67,8 +63,8 @@ class ExcelProcessor:
                 for file_path in files:
                     # 3. Обрабатываем данные и заполняем листы
                     data_columns = self._process_data_for_year(new_wb, file_path, year)
-                    # 4. Создаём итоговый лист
-                    self._create_summary_sheet(new_wb, data_columns)
+                # 4. Создаём итоговый лист
+                self._create_summary_sheet(new_wb, data_columns)
 
                 # 5. Удаляем лист-шаблон
                 self._remove_sheet(new_wb)
@@ -154,11 +150,14 @@ class ExcelProcessor:
                 dst_sheet.column_dimensions[col_letter].width = src_sheet.column_dimensions[col_letter].width
 
 
-    def _fill_sheet(self, sheet, formulas: Dict, level_code: str, source_filename: str) -> str:
+    def _fill_sheet(self, sheet, formulas: Dict, source_filename: str) -> str:
         """Заполняет лист данными и формулами"""
+        
         # Находим первый пустой столбец
         start_col = self._find_first_empty_column(sheet)
-        start_col_idx = column_index_from_string(start_col)
+
+        if not self.first_col_after_template:
+            self.first_col_after_template = start_col
 
         # Заголовок — имя файла без расширения
         sheet[f"{start_col}1"].value = Path(source_filename).stem + "_" + formulas["params"]["cols_aliases"]
@@ -170,10 +169,8 @@ class ExcelProcessor:
         base_formula = formulas["formula"]  # строка вида "=INDEX(..., A2, ...)"
         last_row = sheet.max_row
         
-        sheet_exist = True
-        if formulas["params"]["sheet_name"] == "None":
-            sheet_exist = False
-        
+        sheet_exist = formulas["params"]["sheet_exist"] 
+
         if self.common["checking_list_existence"]:
             sheet_exist = self._sheet_exists(formulas["params"]["path_source_file"], formulas["params"]["sheet_name"])
         # Вставляем формулу во все строки, начиная со 2-й
@@ -183,47 +180,82 @@ class ExcelProcessor:
                 cell.value = base_formula.replace(f"={formulas["params"]["row_condition"]}", f"={formulas["params"]["row_condition"][:-1]}{row}")
             else:
                 cell.value = "=NA()"
-            
-        print(base_formula)
+    
         return start_col
     
-        
-
     def _create_summary_sheet(self, wb, data_columns: Dict) -> None:
         """Создает итоговый лист"""
-        if self.common["summary_sheet"] == "None":
+        if self.common["summary_sheet"]["name"] == "None":
             return
         
-        if self.common["summary_sheet"] in wb.sheetnames:
-            sheet = wb[self.common["summary_sheet"]]
+        if self.common["summary_sheet"]["name"] in wb.sheetnames:
+            sheet = wb[self.common["summary_sheet"]["name"]]
         else:
-            sheet = wb.create_sheet(self.common["summary_sheet"])
-            if wb.sheetnames[0] != self.common["summary_sheet"]:
+            sheet = wb.create_sheet(self.common["summary_sheet"]["name"])
+            if wb.sheetnames[0] != self.common["summary_sheet"]["name"]:
                 self._copy_sheet_structure(wb.worksheets[0], sheet)
 
-        start_col = self._find_first_empty_column(sheet)
         
-        for sheet_name in wb.sheetnames:
-            if sheet_name in self.common["education"]["output_sheets"].values():
-                try:
-                    header = wb[sheet_name][f"{start_col}1"].value
-                    if header:
-                        sheet[f"{start_col}1"].value = f"{header}"
+        
+        # 1. Сначала собираем все уникальные заголовки из всех листов
+        all_headers = []
+        for sheet_name in self.common["education"]["output_sheets"].values():
+            if sheet_name in wb.sheetnames:
+                source_sheet = wb[sheet_name]
+                # Ищем заголовки начиная с первой колонки после шаблонных
+                col = 1 if self.first_col_after_template is None else column_index_from_string(self.first_col_after_template)
+                while True:
+                    cell = source_sheet.cell(row=1, column=col)
+                    if cell.value is None:
                         break
-                except:
-                    continue
-        else:
-            sheet[f"{start_col}1"].value = "Итого"
+                    if cell.value not in all_headers:
+                        all_headers.append(cell.value)
+                    col += 1
 
+         # 2. Записываем заголовки в итоговый лист (начиная с первой пустой колонки)
+        start_col = self._find_first_empty_column(sheet)
+        header_col = column_index_from_string(start_col)
+        for header in all_headers:
+            sheet.cell(row=1, column=header_col, value=header)
+            header_col += 1
+
+        # 3. Заполняем данные SUMIF формулами
         last_row = sheet.max_row
-        for row in range(2, last_row + 1):
-            sum_parts = []
-            for level_sheet_name in self.common["education"]["output_sheets"].values():
-                if level_sheet_name in wb.sheetnames:
-                    sum_parts.append(f"'{level_sheet_name}'!{start_col}{row}")
-
-            if sum_parts:
-                sheet[f"{start_col}{row}"].value = f"=SUM({','.join(sum_parts)})"
+        condition_column = self.common["summary_sheet"]["range_col"]  # Столбец с условием 
+        lookup_column = self.common["summary_sheet"]["criteria_col"]      # Столбец для сравнения 
+        
+            # Для каждого добавленного столбца в итоговом листе
+        for col_idx, header in enumerate(all_headers, start=column_index_from_string(start_col)):  # Начинаем с колонки D (4)
+            # Ищем соответствующий столбец в каждом исходном листе
+            source_columns = {}  # {sheet_name: column_letter}
+            
+            for sheet_name in self.common["education"]["output_sheets"].values():
+                if sheet_name in wb.sheetnames:
+                    source_sheet = wb[sheet_name]
+                    # Ищем столбец с таким же заголовком
+                    for col in range(column_index_from_string(self.first_col_after_template), source_sheet.max_column + 1):
+                        if source_sheet.cell(row=1, column=col).value == header:
+                            source_columns[sheet_name] = get_column_letter(col)
+                            break
+            
+            # Если нашли соответствующие столбцы в исходных листах
+            if source_columns:
+                for row in range(2, last_row + 1):
+                    sumif_parts = []
+                    for sheet_name, src_col in source_columns.items():
+                        sumif_part = (
+                            f"SUMIF('{sheet_name}'!${condition_column}:${condition_column},"
+                            f"${lookup_column}{row},"
+                            f"'{sheet_name}'!{src_col}:{src_col})"
+                        )
+                        sumif_parts.append(sumif_part)
+                    
+                    if sumif_parts:
+                        sheet.cell(
+                            row=row, 
+                            column=col_idx,
+                            value=f"={' + '.join(sumif_parts)}"
+                        )
 
     def _load_template_workbook(self):
         """Загружает шаблон"""
@@ -261,6 +293,16 @@ class ExcelProcessor:
         abs_source = os.path.abspath(source_file_path)
         abs_source_dir = os.path.dirname(abs_source)
         filename = os.path.basename(abs_source)
+        
+        params["path_source_file"] = f"{abs_source_dir}\\{filename}"
+        params["sheet_name"] = sheet_name
+        params["sheet_exist"] = True
+
+        if sheet_name == "None":
+            params["sheet_exist"] = False
+            return {"formula": "=NA()",
+                    "params": params
+        }
 
         # Формируем ссылку на лист
         if abs_source_dir == ".":
@@ -304,15 +346,14 @@ class ExcelProcessor:
         # Финальная формула
         formula = f"INDEX({full_ref}{array},{aggregate_part},{col_match})"
 
-        params["path_source_file"] = f"{abs_source_dir}\\{filename}"
         params["row_condition"] = row_params['lookup_value']
-        params["sheet_name"] = sheet_name
+        
         return {
             "formula": f"={self._nan_error_handle_(formula)}",
             "params": params
         }
 
-    def     _process_data_for_year(self, new_wb, source_file_path: str, year: str) -> Dict:
+    def _process_data_for_year(self, new_wb, source_file_path: str, year: str) -> Dict:
         """Обрабатывает данные и заполняет листы"""
         year_data = self.years_data[year]
         data_columns = {}
@@ -328,6 +369,7 @@ class ExcelProcessor:
                 output_sheet_name = self.common["education"]["output_sheets"][level]
 
                 # Генерируем формулу ДЛЯ ЭТОГО УРОВНЯ
+                
                 formulas = self._generate_formulas(
                     source_file_path=source_file_path,
                     sheet_name=sheet_name,
@@ -345,7 +387,7 @@ class ExcelProcessor:
 
                 # Заполняем
                 try:
-                    start_col = self._fill_sheet(new_sheet, formulas, level_code, source_filename)
+                    start_col = self._fill_sheet(new_sheet, formulas, source_filename)
                     data_columns[output_sheet_name] = start_col
                 except Exception as e:
                     print(f"Ошибка заполнения листа {output_sheet_name}: {str(e)}")
