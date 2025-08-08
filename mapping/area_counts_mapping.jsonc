@@ -14,7 +14,11 @@
             }
         },
 
-        "summary_sheet": "Всего_направления", //None if not needed
+        "summary_sheet": { // For SUMIF
+            "name": "Всего_направления", //None if not needed
+            "range_col": "C",
+            "criteria_col": "A"
+        },
 
         "search_patterns": {
             "required": ["Москва", "СВОД_ВПО1"],
@@ -26,7 +30,7 @@
             "quota": "Р2_1_5 (2)"
         },
 
-        "checking_list_existence": "False" // turning on slows down work a little bit
+        "checking_list_existence": false // turning on slows down work a little bit
     },
     
     // Годовые параметры
@@ -123,7 +127,7 @@
     "2021": {
         "funcs": {
             "out_of_quota": {
-                "array": "$A$12:$W$600", //changed, same with 2022
+                "array": "$A$12:$W$600",
                 "row_num": {
                     "lookup_value": "B2",  //col in recipient
                     "looup_array": "D",   //col in donor
@@ -153,11 +157,7 @@
     "2020": {
         "funcs": {
             "out_of_quota": {
-                "array": "None", //changed
-                "row_num": {
-                },
-                "columns_num": {
-                }
+                "actual_name": "None" //changed
             },
             "quota": {
                 "array": "$A$8:$W$600", //changed
@@ -177,11 +177,7 @@
     "2019": {
         "funcs": {
             "out_of_quota": {
-                "array": "None", //changed, same with 2020
-                "row_num": {
-                },
-                "columns_num": {
-                }
+                "actual_name": "None" //changed, same with 2020
             },
             "quota": {
                 "array": "$A$8:$W$600", //changed, same with 2020
@@ -201,11 +197,7 @@
     "2018": {
         "funcs": {
             "out_of_quota": {
-                "array": "None", //changed, same with 2020
-                "row_num": {
-                },
-                "columns_num": {
-                }
+                "actual_name": "None" //changed, same with 2020
             },
             "quota": {
                 "array": "$A$8:$W$600", //changed, same with 2020
@@ -225,11 +217,7 @@
     "2017": {
         "funcs": {
             "out_of_quota": {
-                "array": "None", //changed, same with 2020
-                "row_num": {
-                },
-                "columns_num": {
-                }
+                "actual_name": "None" //changed, same with 2020
             },
             "quota": {
                 "array": "$A$8:$W$600", //changed, same with 2020
@@ -249,11 +237,7 @@
     "2016": {
         "funcs": {
             "out_of_quota": {
-                "array": "None", //changed, same with 2020
-                "row_num": {
-                },
-                "columns_num": {
-                }
+                "actual_name": "None" //changed, same with 2020
             },
             "quota": {
                 "actual_name": "Р2_1_5 (3)",
@@ -274,11 +258,7 @@
     "2015": {
         "funcs": {
             "out_of_quota": {
-                "array": "None", //changed, same with 2020
-                "row_num": {
-                },
-                "columns_num": {
-                }
+                "actual_name": "None" //changed, same with 2020
             },
             "quota": {
                 "actual_name": "Р2_1_4",
@@ -299,11 +279,7 @@
     "2014": {
         "funcs": {
             "out_of_quota": {
-                "array": "None", //changed, same with 2020
-                "row_num": {
-                },
-                "columns_num": {
-                }
+                "actual_name": "None" //changed, same with 2020
             },
             "quota": {
                 "actual_name": "Р2_1_4",
