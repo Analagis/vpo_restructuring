@@ -10,6 +10,7 @@ import time
 from contextlib import contextmanager
 import win32com.client as win32
 import re
+import pandas as pd
 
 class ExcelProcessor:
     def __init__(self, config_path: str|Path, template_path: Optional[str|Path] = None, output_dir: Optional[str|Path] = None) -> None:
@@ -44,13 +45,14 @@ class ExcelProcessor:
         :param selected_years: Список годов или "all"
         :param include_optional: Включать optional-файлы
         """
+
         years_to_process = self._get_years_to_process(selected_years)
 
         try:
             for year in years_to_process:
                 year_dir = os.path.join(input_dir, "VPO_1_"+str(year))
                 print(f"Обработка года: {year}, название папки/архива: {year_dir}")
-                
+
                 files = self._find_files(year_dir, include_optional)
                 print(f"Найдено файлов для обработки: {len(files)}")
 
@@ -159,7 +161,7 @@ class ExcelProcessor:
         start_col_idx = column_index_from_string(start_col)
 
         # Заголовок — имя файла без расширения
-        sheet[f"{start_col}1"].value = Path(source_filename).stem + "_" + self._get_data_type_by_sheet_name(formulas["params"]["sheet_name"])
+        sheet[f"{start_col}1"].value = Path(source_filename).stem + "_" + formulas["params"]["cols_aliases"]
         
         # Извлекаем саму формулу
         if not isinstance(formulas, dict) or "formula" not in formulas:
@@ -168,10 +170,19 @@ class ExcelProcessor:
         base_formula = formulas["formula"]  # строка вида "=INDEX(..., A2, ...)"
         last_row = sheet.max_row
         
+        sheet_exist = True
+        if formulas["params"]["sheet_name"] == "None":
+            sheet_exist = False
+        
+        if self.common["checking_list_existence"]:
+            sheet_exist = self._sheet_exists(formulas["params"]["path_source_file"], formulas["params"]["sheet_name"])
         # Вставляем формулу во все строки, начиная со 2-й
         for row in range(2, last_row + 1):
             cell = sheet[f"{start_col}{row}"]
-            cell.value = base_formula.replace(f"={formulas["params"]["row_condition"]}", f"={formulas["params"]["row_condition"][:-1]}{row}")
+            if sheet_exist: 
+                cell.value = base_formula.replace(f"={formulas["params"]["row_condition"]}", f"={formulas["params"]["row_condition"][:-1]}{row}")
+            else:
+                cell.value = "=NA()"
             
         print(base_formula)
         return start_col
@@ -180,11 +191,14 @@ class ExcelProcessor:
 
     def _create_summary_sheet(self, wb, data_columns: Dict) -> None:
         """Создает итоговый лист"""
-        if "Итоги" in wb.sheetnames:
-            sheet = wb["Итоги"]
+        if self.common["summary_sheet"] == "None":
+            return
+        
+        if self.common["summary_sheet"] in wb.sheetnames:
+            sheet = wb[self.common["summary_sheet"]]
         else:
-            sheet = wb.create_sheet("Итоги")
-            if wb.sheetnames[0] != "Итоги":
+            sheet = wb.create_sheet(self.common["summary_sheet"])
+            if wb.sheetnames[0] != self.common["summary_sheet"]:
                 self._copy_sheet_structure(wb.worksheets[0], sheet)
 
         start_col = self._find_first_empty_column(sheet)
@@ -194,7 +208,7 @@ class ExcelProcessor:
                 try:
                     header = wb[sheet_name][f"{start_col}1"].value
                     if header:
-                        sheet[f"{start_col}1"].value = f"Итого {header}"
+                        sheet[f"{start_col}1"].value = f"{header}"
                         break
                 except:
                     continue
@@ -252,7 +266,7 @@ class ExcelProcessor:
         if abs_source_dir == ".":
             sheet_ref = f"[{filename}]{sheet_name}"
         else:
-            sheet_ref = f"{abs_source_dir}/[{filename}]{sheet_name}"
+            sheet_ref = f"{abs_source_dir}\\[{filename}]{sheet_name}"
         full_ref = f"'{sheet_ref}'!"
 
         array = params["array"]  # например, $A$12:$W$467
@@ -290,7 +304,7 @@ class ExcelProcessor:
         # Финальная формула
         formula = f"INDEX({full_ref}{array},{aggregate_part},{col_match})"
 
-        params["full_ref"] = full_ref
+        params["path_source_file"] = f"{abs_source_dir}\\{filename}"
         params["row_condition"] = row_params['lookup_value']
         params["sheet_name"] = sheet_name
         return {
@@ -298,14 +312,17 @@ class ExcelProcessor:
             "params": params
         }
 
-    def _process_data_for_year(self, new_wb, source_file_path: str, year: str) -> Dict:
+    def     _process_data_for_year(self, new_wb, source_file_path: str, year: str) -> Dict:
         """Обрабатывает данные и заполняет листы"""
         year_data = self.years_data[year]
         data_columns = {}
         source_filename = Path(source_file_path).name
 
         for data_type, params in year_data["funcs"].items():
-            sheet_name = self.common["cols_aliases"].get(data_type, data_type)
+
+            params["cols_aliases"] = data_type
+
+            sheet_name = year_data["funcs"][data_type].get("actual_name", self.common["cols_aliases"][data_type])
 
             for level, level_code in self.common["education"]["codes"].items():
                 output_sheet_name = self.common["education"]["output_sheets"][level]
@@ -335,7 +352,7 @@ class ExcelProcessor:
 
         return data_columns
 
-    def _remove_sheet(self, wb, sheet_reference: Union[str, int] = 0) -> None:
+    def _remove_sheet(self, wb, sheet_reference: Union[str, int] = "шаблон") -> None:
         """
         Удаляет лист из рабочей книги по названию или индексу
         
@@ -388,3 +405,10 @@ class ExcelProcessor:
         """
 
         subprocess.run(["powershell", "-Command", ps_script], shell=True)
+
+    def _sheet_exists(self, file_path, sheet_name) -> bool:
+        xl = pd.ExcelFile(file_path)
+        if sheet_name in xl.sheet_names:
+            return True
+        print(f"Листа {sheet_name} нет в файле {file_path}")
+        return False
