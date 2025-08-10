@@ -1,0 +1,88 @@
+{
+    "common": {
+        
+        "search_patterns": {
+            "required": ["Москва", "СВОД_ВПО1"],
+            "optional": ["заочная", "очная", "очно-заочная"]
+        },
+
+        "rows_aliases": {
+            "aliases": {
+                "out_of_quota": 3,
+                "quota": 7
+            },  
+            "column": "B"
+        },
+
+        "list_aliases": {
+            "aliases": {
+                "bak": "Р2_11(1)",
+                "spec": "Р2_11(2)",
+                "mag": "Р2_11(3)"
+            }
+        },
+
+        "output_sheets": {
+                "to_list": "list_aliases",
+                "to_col":  "rows_aliases", //optional
+                "name_aliases": {    //optional
+                "bak": "Бак_страны",
+                "spec": "Специалитет_страны",
+                "mag": "Магистратура_страны"}
+            },
+        
+        "summary_sheet": { // For SUMIF
+            "name": "Всего_страны", //None if not needed
+            "range_col": "B",
+            "criteria_col": "B"
+        },
+
+        "checking_list_existence": false // turning on slows down work a little bit
+    },
+    
+    // Годовые параметры
+    "2024": {
+        "funcs": {
+            "bak": {
+                "array": "$A$10:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "C",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 4,
+                    "looup_array": 10,
+                    "match_type": 0
+                }
+            },
+            "spec": {
+                "array": "$A$10:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "C",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19,
+                    "looup_array": 10,
+                    "match_type": 0
+                }
+            },
+            "mag": {
+                "array": "$A$10:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "C",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 34,
+                    "looup_array": 10,
+                    "match_type": 0
+                }
+            }
+        }
+    }
+}
+    
