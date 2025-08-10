@@ -9,7 +9,7 @@
         "rows_aliases": {
             "aliases": {
                 "out_of_quota": 3,
-                "quota": 7 // 6 с 21022
+                "quota": 7
             },  
             "column": "B"
         },
@@ -51,7 +51,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 4,
+                    "lookup_value": 14,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -64,7 +64,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 19,
+                    "lookup_value": 29,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -77,7 +77,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 34,
+                    "lookup_value": 44,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -95,7 +95,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 4,
+                    "lookup_value": 14,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -108,7 +108,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 19,
+                    "lookup_value": 29,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -121,7 +121,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 34,
+                    "lookup_value": 44,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -139,7 +139,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 4,
+                    "lookup_value": 14,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -152,7 +152,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 19,
+                    "lookup_value": 29,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -165,7 +165,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 34,
+                    "lookup_value": 44,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -183,7 +183,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 4,
+                    "lookup_value": 14,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -196,7 +196,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 19,
+                    "lookup_value": 29,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -209,14 +209,14 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 34,
+                    "lookup_value": 44,
                     "looup_array": 10,
                     "match_type": 0
                 }
             }
         }
     },
-    
+
     "2020": {
         "funcs": {
             "bak": {
@@ -228,7 +228,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 4,
+                    "lookup_value": 14,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -242,7 +242,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 19,
+                    "lookup_value": 29,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -256,7 +256,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 34,
+                    "lookup_value": 44,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -275,7 +275,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 4,
+                    "lookup_value": 14,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -289,7 +289,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 19,
+                    "lookup_value": 29,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -303,7 +303,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 34,
+                    "lookup_value": 44,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -322,7 +322,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 4,
+                    "lookup_value": 14,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -336,7 +336,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 19,
+                    "lookup_value": 29,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -350,7 +350,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 34,
+                    "lookup_value": 44,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -369,7 +369,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 4,
+                    "lookup_value": 14,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -383,7 +383,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 19,
+                    "lookup_value": 29,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -397,7 +397,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 34,
+                    "lookup_value": 44,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -416,7 +416,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 4,
+                    "lookup_value": 14,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -430,7 +430,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 19,
+                    "lookup_value": 29,
                     "looup_array": 10,
                     "match_type": 0
                 }
@@ -444,7 +444,7 @@
                     "match_type": 0
                 },
                 "columns_num": {
-                    "lookup_value": 34,
+                    "lookup_value": 44,
                     "looup_array": 10,
                     "match_type": 0
                 }
