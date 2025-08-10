@@ -160,7 +160,7 @@ class ExcelProcessor:
             self.first_col_after_template = start_col
 
         # Заголовок — имя файла без расширения
-        sheet[f"{start_col}1"].value = Path(source_filename).stem + "_" + formulas["params"]["cols_aliases"]
+        sheet[f"{start_col}1"].value = formulas["params"]["sheet_col_name"]
         
         # Извлекаем саму формулу
         if not isinstance(formulas, dict) or "formula" not in formulas:
@@ -194,12 +194,10 @@ class ExcelProcessor:
             sheet = wb.create_sheet(self.common["summary_sheet"]["name"])
             if wb.sheetnames[0] != self.common["summary_sheet"]["name"]:
                 self._copy_sheet_structure(wb.worksheets[0], sheet)
-
-        
         
         # 1. Сначала собираем все уникальные заголовки из всех листов
         all_headers = []
-        for sheet_name in self.common["education"]["output_sheets"].values():
+        for sheet_name in self.common["output_sheets"]["name_aliases"].values():
             if sheet_name in wb.sheetnames:
                 source_sheet = wb[sheet_name]
                 # Ищем заголовки начиная с первой колонки после шаблонных
@@ -224,12 +222,15 @@ class ExcelProcessor:
         condition_column = self.common["summary_sheet"]["range_col"]  # Столбец с условием 
         lookup_column = self.common["summary_sheet"]["criteria_col"]      # Столбец для сравнения 
         
+        if len(all_headers) < column_index_from_string(start_col):
+            print("Нет столбцов для составления листа итогов")
+            return
             # Для каждого добавленного столбца в итоговом листе
         for col_idx, header in enumerate(all_headers, start=column_index_from_string(start_col)):  # Начинаем с колонки D (4)
             # Ищем соответствующий столбец в каждом исходном листе
             source_columns = {}  # {sheet_name: column_letter}
             
-            for sheet_name in self.common["education"]["output_sheets"].values():
+            for sheet_name in self.common["output_sheets"]["name_aliases"].values():
                 if sheet_name in wb.sheetnames:
                     source_sheet = wb[sheet_name]
                     # Ищем столбец с таким же заголовком
@@ -326,7 +327,7 @@ class ExcelProcessor:
         key_col = row_params['looup_array']  # например, D
         key_col_range = f"{full_ref}${key_col}${start_row}:${key_col}${end_row}"  # $D$12:$D$467
 
-        edu_col = self.common["education"]["column"]  # B
+        edu_col = self.common["rows_aliases"]["column"]  # B
         edu_col_range = f"{full_ref}${edu_col}${start_row}:${edu_col}${end_row}"  # $B$12:$B$467
 
         header_row_range = f"{full_ref}${start_col_letter}${start_row}:${end_col_letter}${start_row}"  # $A$12:$W$12
@@ -345,7 +346,7 @@ class ExcelProcessor:
 
         # Финальная формула
         formula = f"INDEX({full_ref}{array},{aggregate_part},{col_match})"
-
+        
         params["row_condition"] = row_params['lookup_value']
         
         return {
@@ -354,45 +355,89 @@ class ExcelProcessor:
         }
 
     def _process_data_for_year(self, new_wb, source_file_path: str, year: str) -> Dict:
-        """Обрабатывает данные и заполняет листы"""
+        """
+        Универсальный процессинг под новую структуру:
+        - На какие листы разбивать ("to_list")
+        - На какие колонки разбивать ("to_col"), если не указано — в качестве столбцов используется противоположная группа.
+        - Названия листов подхватываются из name_aliases, если есть.
+        """
+
         year_data = self.years_data[year]
         data_columns = {}
         source_filename = Path(source_file_path).name
 
-        for data_type, params in year_data["funcs"].items():
+        # Определяем группы по common
+        to_list = self.common["output_sheets"]["to_list"]  # "rows_aliases" или "list_aliases"
+        to_col = self.common["output_sheets"].get("to_col", "list_aliases" if to_list == "rows_aliases" else "rows_aliases")
+        name_overrides = self.common["output_sheets"].get("name_aliases", {})
 
-            params["cols_aliases"] = data_type
+        # Листы в итоговом файле
+        list_group = self.common[to_list]          # rows_aliases или list_aliases
+        list_aliases = list_group["aliases"]
 
-            sheet_name = year_data["funcs"][data_type].get("actual_name", self.common["cols_aliases"][data_type])
+        # Столбцы в итоговом файле
+        col_group = self.common[to_col]
+        col_aliases = col_group["aliases"]
+       
+        for sheet_key, sheet_value in list_aliases.items():
+            # Имя листа: если есть в name_aliases — берём его, иначе sheet_key
+            sheet_name = name_overrides.get(sheet_key, sheet_key)
+            if sheet_name not in new_wb.sheetnames:
+                base_sheet = new_wb.worksheets[0]
+                new_sheet = new_wb.create_sheet(sheet_name)
+                self._copy_sheet_structure(base_sheet, new_sheet)
+            else:
+                new_sheet = new_wb[sheet_name]
 
-            for level, level_code in self.common["education"]["codes"].items():
-                output_sheet_name = self.common["education"]["output_sheets"][level]
-
-                # Генерируем формулу ДЛЯ ЭТОГО УРОВНЯ
-                
-                formulas = self._generate_formulas(
-                    source_file_path=source_file_path,
-                    sheet_name=sheet_name,
-                    params=params,
-                    level_code=level_code  # ← передаём код уровня
-                )
-
-                # Ищем или создаём лист
-                if output_sheet_name not in new_wb.sheetnames:
-                    base_sheet = new_wb.worksheets[0]
-                    new_sheet = new_wb.create_sheet(output_sheet_name)
-                    self._copy_sheet_structure(base_sheet, new_sheet)
+            for col_key, col_value in col_aliases.items():
+                # rows_aliases — это критерий для level_code (поддержка списка значений)
+                # list_aliases — это имя листа-донора
+                if to_list == "rows_aliases":
+                    level_code = list_aliases[sheet_key]
+                    sheet_source = col_value
+                    list_key = col_key
                 else:
-                    new_sheet = new_wb[output_sheet_name]
+                    level_code = col_value
+                    sheet_source = sheet_value
+                    list_key = sheet_key
+                    
+                if list_key not in year_data["funcs"]:
+                    continue
+                
+                # Получаем параметры                                 
+                params = year_data["funcs"][list_key]
+                # Подпись столбца в итоговом файле
+                params["sheet_col_name"] = (Path(source_filename).stem + "_" + col_key)
 
-                # Заполняем
-                try:
-                    start_col = self._fill_sheet(new_sheet, formulas, source_filename)
-                    data_columns[output_sheet_name] = start_col
-                except Exception as e:
-                    print(f"Ошибка заполнения листа {output_sheet_name}: {str(e)}")
+                # Если "actual_name" переопределяет sheet_source — берём его
+                if isinstance(params.get("actual_name", None), str):
+                    sheet_source = params["actual_name"]
+
+                # level_code: список (например, [1,3]) — тогда прогоняем все, иначе — один
+                if isinstance(level_code, list):
+                    code_list = level_code
+                else:
+                    code_list = [level_code]
+                
+                for code in code_list:
+                    
+                    formulas = self._generate_formulas(
+                        source_file_path=source_file_path,
+                        sheet_name=sheet_source,
+                        params=params,
+                        level_code=code
+                    )
+                    
+                    # Заполняем
+                    try:
+                        start_col = self._fill_sheet(new_sheet, formulas, source_filename)
+                        data_columns.setdefault(sheet_name, []).append(start_col)
+                    except Exception as e:
+                        print(f"Ошибка заполнения листа {sheet_name}, столбца {col_key}: {str(e)}")
 
         return data_columns
+
+
 
     def _remove_sheet(self, wb, sheet_reference: Union[str, int] = "шаблон") -> None:
         """
@@ -426,7 +471,7 @@ class ExcelProcessor:
 
     def _get_data_type_by_sheet_name(self, sheet_name: str) -> str:
         """Возвращает логический тип по имени листа"""
-        reverse_map = {v: k for k, v in self.common["cols_aliases"].items()}
+        reverse_map = {v: k for k, v in self.common["list_aliases"]["aliases"].items()}
         return reverse_map.get(sheet_name, "unknown")
 
     def _delete_dogs(self, file_name: str):
