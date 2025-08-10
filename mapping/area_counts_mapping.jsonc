@@ -1,19 +1,6 @@
 {
     "common": {
-        "education": {
-            "column": "B", // № строки
-            "codes": {
-                "bak": 1,
-                "spec": 2,
-                "mag": 3
-            },
-            "output_sheets": {
-                "bak": "Бак_направления",
-                "spec": "Специалитет_направления",
-                "mag": "Магистратура_направления"
-            }
-        },
-
+        
         "summary_sheet": { // For SUMIF
             "name": "Всего_направления", //None if not needed
             "range_col": "C",
@@ -25,10 +12,30 @@
             "optional": ["заочная", "очная", "очно-заочная"]
         },
 
-        "cols_aliases": {
-            "out_of_quota": "Р2_1_2 (4)",  
-            "quota": "Р2_1_5 (2)"
+        "rows_aliases": {
+            "aliases": {
+                "bak": 1,
+                "spec": 2,
+                "mag": 3
+            },  
+            "column": "B"
         },
+
+        "list_aliases": {
+            "aliases": {
+                "out_of_quota": "Р2_1_2 (4)",  
+                "quota": "Р2_1_5 (2)"
+            }
+        },
+
+        "output_sheets": {
+                "to_list": "rows_aliases",
+                "to_col":  "list_aliases", //optional
+                "name_aliases": {    //optional
+                "bak": "Бак_направления",
+                "spec": "Специалитет_направления",
+                "mag": "Магистратура_направления"}
+            },
 
         "checking_list_existence": false // turning on slows down work a little bit
     },
