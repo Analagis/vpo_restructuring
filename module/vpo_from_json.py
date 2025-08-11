@@ -66,7 +66,7 @@ class ExcelProcessor:
 
                 for file_path in files:
                     # 4. Обрабатываем данные и заполняем листы
-                    data_columns = self._process_data_for_year(new_wb, file_path, year)
+                    self._process_data_for_year(new_wb, file_path, year)
                 
                 # 5. Создаём итоговый лист
                 for summary_sheet in self.common['summary_sheet']:
@@ -141,14 +141,14 @@ class ExcelProcessor:
             if dim.width:
                 dst_sheet.column_dimensions[col_letter].width = dim.width
 
-    def _fill_sheet(self, sheet, formulas: Dict, source_filename: str) -> str:
+    def _fill_sheet(self, sheet, formulas: Dict) -> str:
         """Заполняет лист данными и формулами"""
         
         # Находим первый пустой столбец
         start_col = self._find_first_empty_column(sheet)
 
         if not self.first_col_after_template:
-            self.first_col_after_template = start_col
+            self.first_col_after_template = column_index_from_string(start_col)
 
         # Заголовок — имя файла без расширения
         sheet[f"{start_col}1"].value = formulas["params"]["sheet_col_name"]
@@ -193,7 +193,7 @@ class ExcelProcessor:
         for sheet_name in self.common["output_sheets"]["name_aliases"].values():
             if sheet_name in wb.sheetnames:
                 src = wb[sheet_name]
-                col_idx = column_index_from_string(self.first_col_after_template)
+                col_idx = self.first_col_after_template
                 while True:
                     val = src.cell(1, col_idx).value
                     if not val:
@@ -209,7 +209,7 @@ class ExcelProcessor:
         for sheet_name in self.common["output_sheets"]["name_aliases"].values():
             if sheet_name in wb.sheetnames:
                 src_sheet = wb[sheet_name]
-                for col in range(column_index_from_string(self.first_col_after_template), src_sheet.max_column + 1):
+                for col in range(self.first_col_after_template, src_sheet.max_column + 1):
                     if src_sheet.cell(1, col).value == header:
                         col_letter = get_column_letter(col)
                         parts.append(
@@ -227,7 +227,7 @@ class ExcelProcessor:
             src_sheet = wb[sheet_name]
             matched_cols = [
                 get_column_letter(col)
-                for col in range(column_index_from_string(self.first_col_after_template), src_sheet.max_column + 1)
+                for col in range(self.first_col_after_template, src_sheet.max_column + 1)
                 if self._header_matches(str(src_sheet.cell(1, col).value or "").lower(), keywords)
             ]
             if matched_cols:
@@ -259,9 +259,6 @@ class ExcelProcessor:
         # Подготовка итогового листа
         sheet, start_col_idx, last_row = self._prepare_summary_sheet(wb, summary_sheet)
 
-        start_col = self._find_first_empty_column(sheet)
-        start_col_idx = column_index_from_string(start_col)
-        last_row = sheet.max_row
         tag_groups = summary_sheet.get("tag_groups", None)
         cond_col = summary_sheet["range_col"]
         crit_col = summary_sheet["criteria_col"]
@@ -282,7 +279,6 @@ class ExcelProcessor:
 
         # --- 2. Групповой режим ---
         else:
-            # Преобразуем [["москва"], ["москва","заочная"]] → {"Москва": ["москва"], "Москва_заочная": ["москва","заочная"]}
             tag_dict = {"_".join(words).title(): words for words in tag_groups}
             # Заголовки — названия тегов
             for i, tag_name in enumerate(tag_dict.keys(), start=start_col_idx):
@@ -477,7 +473,7 @@ class ExcelProcessor:
                     
                     # Заполняем
                     try:
-                        start_col = self._fill_sheet(new_sheet, formulas, source_filename)
+                        start_col = self._fill_sheet(new_sheet, formulas)
                         data_columns.setdefault(sheet_name, []).append(start_col)
                     except Exception as e:
                         print(f"Ошибка заполнения листа {sheet_name}, столбца {col_key}: {str(e)}")
