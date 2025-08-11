@@ -9,7 +9,7 @@
         "rows_aliases": {
             "aliases": {
                 "out_of_quota": 3,
-                "quota": 7 // 6 с 21022
+                "quota": 7 // 6 с 2022
             },  
             "column": "B"
         },
@@ -19,6 +19,48 @@
                 "bak": "Р2_11(1)",
                 "spec": "Р2_11(2)",
                 "mag": "Р2_11(3)"
+            }
+        },
+        
+        "funcs": {
+            "bak": {
+                "array": "$A$10:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "C",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 4,
+                    "looup_array": 10,
+                    "match_type": 0
+                }
+            },
+            "spec": {
+                "array": "$A$10:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "C",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 19,
+                    "looup_array": 10,
+                    "match_type": 0
+                }
+            },
+            "mag": {
+                "array": "$A$10:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "C",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 34,
+                    "looup_array": 10,
+                    "match_type": 0
+                }
             }
         },
 
@@ -31,423 +73,108 @@
                 "mag": "Магистратура_страны"}
             },
         
-        "summary_sheet": { // For SUMIF
+        "summary_sheet": [
+            { // For SUMIF
             "name": "Всего_страны", //None if not needed
             "range_col": "B",
             "criteria_col": "B"
         },
+        { // Для агрегации
+            "name": "оч_оч-зч_зч", //None if not needed or just dont added
+            "range_col": "B",
+            "criteria_col": "B",
+            "tag_groups": [["москва"], ["москва", "заочная"], ["москва", "очная"], ["москва", "очно-заочная"]]
+        }],
 
         "checking_list_existence": false // turning on slows down work a little bit
     },
     
     // Годовые параметры
     "2024": {
-        "funcs": {
-            "bak": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 4,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "spec": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 19,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "mag": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 34,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            }
-        }
     },
-
     "2023": {
-        "funcs": {
-            "bak": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 4,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "spec": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 19,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "mag": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 34,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            }
-        }
     },
-
     "2022": {
-        "funcs": {
-            "bak": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 4,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "spec": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 19,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "mag": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 34,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
+        "rows_aliases": {
+            "aliases": {
+                "quota": 6
             }
         }
     },
-
     "2021": {
-        "funcs": {
-            "bak": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 4,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "spec": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 19,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "mag": {
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 34,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
+        "rows_aliases": {
+            "aliases": {
+                "quota": 6
             }
         }
     },
-    
     "2020": {
-        "funcs": {
-            "bak": {
-                "actual_name": "Р2_12(1)", // changed
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 4,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "spec": {
-                "actual_name": "Р2_12(2)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 19,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "mag": {
-                "actual_name": "Р2_12(3)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 34,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
+        "rows_aliases": {
+            "aliases": {
+                "quota": 6
+            }
+        },
+        "list_aliases": {
+            "aliases": {
+                "bak": "Р2_12(1)",
+                "spec": "Р2_12(2)",
+                "mag": "Р2_12(3)"
             }
         }
     },
-
     "2019": {
-        "funcs": {
-            "bak": {
-                "actual_name": "Р2_12(1)", // changed -- same with 2022
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 4,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "spec": {
-                "actual_name": "Р2_12(2)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 19,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "mag": {
-                "actual_name": "Р2_12(3)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 34,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
+        "rows_aliases": {
+            "aliases": {
+                "quota": 6
+            }
+        },
+        "list_aliases": {
+            "aliases": {
+                "bak": "Р2_12(1)",
+                "spec": "Р2_12(2)",
+                "mag": "Р2_12(3)"
             }
         }
     },
-
     "2018": {
-        "funcs": {
-            "bak": {
-                "actual_name": "Р2_12(1)", // changed -- same with 2022
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 4,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "spec": {
-                "actual_name": "Р2_12(2)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 19,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "mag": {
-                "actual_name": "Р2_12(3)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 34,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
+        "rows_aliases": {
+            "aliases": {
+                "quota": 6
+            }
+        },
+        "list_aliases": {
+            "aliases": {
+                "bak": "Р2_12(1)",
+                "spec": "Р2_12(2)",
+                "mag": "Р2_12(3)"
             }
         }
     },
-
     "2017": {
-        "funcs": {
-            "bak": {
-                "actual_name": "Р2_12(1)", // changed -- same with 2022
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 4,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "spec": {
-                "actual_name": "Р2_12(2)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 19,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "mag": {
-                "actual_name": "Р2_12(3)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 34,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
+        "rows_aliases": {
+            "aliases": {
+                "quota": 6
+            }
+        },
+        "list_aliases": {
+            "aliases": {
+                "bak": "Р2_12(1)",
+                "spec": "Р2_12(2)",
+                "mag": "Р2_12(3)"
             }
         }
     },
-
     "2016": {
-        "funcs": {
-            "bak": {
-                "actual_name": "Р2_12(1)", // changed -- same with 2022
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 4,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "spec": {
-                "actual_name": "Р2_12(2)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 19,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
-            },
-            "mag": {
-                "actual_name": "Р2_12(3)",
-                "array": "$A$10:$W$600",
-                "row_num": {
-                    "lookup_value": "B2",  //col in recipient
-                    "looup_array": "C",   //col in donor
-                    "match_type": 0
-                },
-                "columns_num": {
-                    "lookup_value": 34,
-                    "looup_array": 10,
-                    "match_type": 0
-                }
+        "rows_aliases": {
+            "aliases": {
+                "quota": 6
+            }
+        },
+        "list_aliases": {
+            "aliases": {
+                "bak": "Р2_12(1)",
+                "spec": "Р2_12(2)",
+                "mag": "Р2_12(3)"
             }
         }
     }
