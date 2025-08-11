@@ -1,6 +1,6 @@
 {
     "common": {
-        "output_file_name": "Направления_численность",//optional
+        //"output_file_name": "Направления_численность",//optional
 
         "summary_sheet": [{ // For SUMIF
             "name": "Всего_направления", //None if not needed
