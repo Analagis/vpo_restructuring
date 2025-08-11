@@ -8,13 +8,13 @@
 
 Скрипт можно запустить из командной строки:
 
-```
+``` bash
 python .\tables_creating.py   [--template ] [--output ] [--years YEAR1 YEAR2 ... | all] [--include_optional]
 ```
 
 ### Пример запуска (из папки scripts)
 
-```
+``` bash
 python .\tables_creating.py ..\mapping\country_counts_mapping.jsonc ..\..\source_files\ --template ..\template\country_counts_templates.xlsx --include_optional --years 2024
 ```
 
@@ -115,6 +115,10 @@ input/
 - Конфиг и шаблон должны быть согласованы: все коды столбцов, диапазоны и имена листов должны соответствовать структуре исходных файлов.
 - Если в `funcs` для некоторого ключа указан `"actual_name": "None"` или `"array"` пустой — этот лист/колонка буду заполнены "=NA().
 - Если `checking_list_existence = true` — при большом количестве файлов обработка может стать значительно медленнее.
+- В проекте используется setup.py для кастомного модуля. Установить из корня командой:
+``` bash
+pip install -e .
+```
 
 ---
 
