@@ -110,25 +110,17 @@ class ExcelProcessor:
 
     def _match_patterns(self, filename: str, include_optional: bool) -> bool:
         """Проверяет соответствие файла шаблонам имен"""
+        fn = filename.lower()
         required_patterns = [p.lower() for p in self.common["search_patterns"]["required"]]
         if not include_optional:
-            required_ok = any(p in filename.lower()
-                for p in required_patterns
-            )
-            return required_ok
+            return any(p in fn for p in required_patterns)
         else:
             optional_patterns = [p.lower() for p in self.common["search_patterns"]["optional"]]
-            optional_ok = any((p in filename.lower() and r in filename.lower())
-                for p in optional_patterns
-                for r in required_patterns
-            )
-            
-            return optional_ok
+            return any(p in fn and r in fn for p in optional_patterns for r in required_patterns)
 
     def _get_output_path(self, year: str) -> str:
         """Генерирует путь для выходного файла"""
-        source_name = Path(self.template_path).stem.split("_")[:-1]
-        output_name = f"{year}_{"_".join(source_name)}.xlsx"
+        output_name = f"{year}_{"_".join(Path(self.template_path).stem.split("_")[:-1])}.xlsx" if "output_file_name" not in self.common else f"{year}_{self.common["output_file_name"]}.xlsx"
         return os.path.join(self.output_dir, output_name)
 
     def _find_first_empty_column(self, sheet) -> str:
@@ -141,17 +133,13 @@ class ExcelProcessor:
     def _copy_sheet_structure(self, src_sheet, dst_sheet) -> None:
         """Копирует данные и ширину столбцов"""
         # Копируем данные
-        for row in src_sheet.iter_rows():
-            for cell in row:
-                dst_cell = dst_sheet[cell.coordinate]
-                dst_cell.value = cell.value
+        for row in src_sheet.iter_rows(values_only=True):
+            dst_sheet.append(list(row))
 
         # Копируем ширину столбцов
-        for col_idx in range(1, src_sheet.max_column + 1):
-            col_letter = get_column_letter(col_idx)
-            if src_sheet.column_dimensions[col_letter].width:
-                dst_sheet.column_dimensions[col_letter].width = src_sheet.column_dimensions[col_letter].width
-
+        for col_letter, dim in src_sheet.column_dimensions.items():
+            if dim.width:
+                dst_sheet.column_dimensions[col_letter].width = dim.width
 
     def _fill_sheet(self, sheet, formulas: Dict, source_filename: str) -> str:
         """Заполняет лист данными и формулами"""
@@ -188,11 +176,12 @@ class ExcelProcessor:
     
     def _prepare_summary_sheet(self, wb, summary_sheet):
         """Создаёт или берёт существующий итоговый лист и возвращает (sheet, start_col_idx, last_row)"""
-        if summary_sheet["name"] in wb.sheetnames:
+        sheetnames = wb.sheetnames
+        if summary_sheet["name"] in sheetnames:
             sheet = wb[summary_sheet["name"]]
         else:
             sheet = wb.create_sheet(summary_sheet["name"])
-            if wb.sheetnames[0] != summary_sheet["name"]:
+            if sheetnames[0] != summary_sheet["name"]:
                 self._copy_sheet_structure(wb.worksheets[0], sheet)
 
         start_col = self._find_first_empty_column(sheet)
