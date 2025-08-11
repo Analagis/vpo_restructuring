@@ -80,7 +80,7 @@
             "criteria_col": "B"
         },
         { // Для агрегации
-            "name": "оч_оч-зч_зч", //None if not needed or just dont added
+            "name": "Москва_страны_языки", //None if not needed or just dont added
             "range_col": "B",
             "criteria_col": "B",
             "tag_groups": [["москва"], ["москва", "заочная"], ["москва", "очная"], ["москва", "очно-заочная"]]

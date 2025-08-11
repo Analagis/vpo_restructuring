@@ -1,5 +1,7 @@
 {
     "common": {
+        "output_file_name": "Направления_численность",//optional
+
         "summary_sheet": [{ // For SUMIF
             "name": "Всего_направления", //None if not needed
             "range_col": "C",
@@ -8,7 +10,7 @@
 
         "search_patterns": {
             "required": ["Москва", "СВОД_ВПО1"],
-            "optional": ["заочная", "очная", "очно-заочная"]
+            "optional": ["заочная", "очная", "очно-заочная"] //optional
         },
 
         "rows_aliases": {
@@ -64,6 +66,8 @@
                 "spec": "Специалитет_направления",
                 "mag": "Магистратура_направления"}
             },
+
+        "error_handle": 0, //errors and nuns replacement in formulas (not work, if source sheet doesnt exist) //optional
 
         "checking_list_existence": false // turning on slows down work a little bit
     },
