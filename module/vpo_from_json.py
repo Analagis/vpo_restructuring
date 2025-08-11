@@ -6,6 +6,7 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter, column_index_from_string
 from typing import Union, List, Dict, Optional
 import pandas as pd
+from copy import deepcopy
 
 class ExcelProcessor:
     def __init__(self, config_path: str|Path, template_path: Optional[str|Path] = None, output_dir: Optional[str|Path] = None) -> None:
@@ -19,6 +20,7 @@ class ExcelProcessor:
         with open(config_path, 'r', encoding='utf-8') as f:
             self.config = json.load(f)
         
+        self.common_init = self.config["common"]
         self.common = self.config["common"]
         self.years_data = {k: v for k, v in self.config.items() if k != "common"}
         
@@ -60,6 +62,9 @@ class ExcelProcessor:
                 # 2. Создаём новую книгу с листами из шаблона
                 new_wb = self._create_new_workbook_with_template_sheets(template_wb)
                 
+                # 3. Корректируем common под особенности года
+                self.common = self._deep_merge_dicts(self.common_init, self.years_data[year])
+
                 for file_path in files:
                     # 3. Обрабатываем данные и заполняем листы
                     data_columns = self._process_data_for_year(new_wb, file_path, year)
@@ -499,3 +504,24 @@ class ExcelProcessor:
             return True
         print(f"Листа {sheet_name} нет в файле {file_path}")
         return False
+    
+    def _deep_merge_dicts(self, base: dict, override: dict) -> dict:
+        """
+        Рекурсивно объединяет два словаря.
+        Значения из override перекрывают значения base.
+        """
+        result = deepcopy(base)
+
+        for key, value in override.items():
+            if (
+                key in result
+                and isinstance(result[key], dict)
+                and isinstance(value, dict)
+            ):
+                # Если оба значения словари → рекурсивный merge
+                result[key] = self._deep_merge_dicts(result[key], value)
+            else:
+                # Перезаписываем значение или добавляем новый ключ
+                result[key] = deepcopy(value)
+
+        return result
