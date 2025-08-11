@@ -191,6 +191,74 @@ class ExcelProcessor:
     
         return start_col
     
+    def _prepare_summary_sheet(self, wb, summary_sheet):
+        """Создаёт или берёт существующий итоговый лист и возвращает (sheet, start_col_idx, last_row)"""
+        if summary_sheet["name"] in wb.sheetnames:
+            sheet = wb[summary_sheet["name"]]
+        else:
+            sheet = wb.create_sheet(summary_sheet["name"])
+            if wb.sheetnames[0] != summary_sheet["name"]:
+                self._copy_sheet_structure(wb.worksheets[0], sheet)
+
+        start_col = self._find_first_empty_column(sheet)
+        return sheet, column_index_from_string(start_col), sheet.max_row
+    
+    def _collect_headers(self, wb):
+        """Собирает все уникальные заголовки из выходных листов"""
+        headers = []
+        for sheet_name in self.common["output_sheets"]["name_aliases"].values():
+            if sheet_name in wb.sheetnames:
+                src = wb[sheet_name]
+                col_idx = column_index_from_string(self.first_col_after_template)
+                while True:
+                    val = src.cell(1, col_idx).value
+                    if not val:
+                        break
+                    if val not in headers:
+                        headers.append(val)
+                    col_idx += 1
+        return headers
+
+    def _get_sumif_parts_for_column(self, wb, header, cond_col, crit_col):
+        """Возвращает список частей SUMIF для обычного заголовка"""
+        parts = []
+        for sheet_name in self.common["output_sheets"]["name_aliases"].values():
+            if sheet_name in wb.sheetnames:
+                src_sheet = wb[sheet_name]
+                for col in range(column_index_from_string(self.first_col_after_template), src_sheet.max_column + 1):
+                    if src_sheet.cell(1, col).value == header:
+                        col_letter = get_column_letter(col)
+                        parts.append(
+                            f"SUMIF('{sheet_name}'!${cond_col}:${cond_col},${crit_col}{{row}},'{sheet_name}'!{col_letter}:{col_letter})"
+                        )
+                        break
+        return parts
+    
+    def _get_sumif_parts_for_tag(self, wb, keywords, cond_col, crit_col):
+        """Возвращает список частей SUMIF для группы ключевых слов"""
+        parts_per_sheet = []
+        for sheet_name in self.common["output_sheets"]["name_aliases"].values():
+            if sheet_name not in wb.sheetnames:
+                continue
+            src_sheet = wb[sheet_name]
+            matched_cols = [
+                get_column_letter(col)
+                for col in range(column_index_from_string(self.first_col_after_template), src_sheet.max_column + 1)
+                if self._header_matches(str(src_sheet.cell(1, col).value or "").lower(), keywords)
+            ]
+            if matched_cols:
+                if len(matched_cols) == 1:
+                    parts_per_sheet.append(
+                        f"SUMIF('{sheet_name}'!${cond_col}:${cond_col},${crit_col}{{row}},'{sheet_name}'!{matched_cols[0]}:{matched_cols[0]})"
+                    )
+                else:
+                    inner = " + ".join(
+                        f"SUMIF('{sheet_name}'!${cond_col}:${cond_col},${crit_col}{{row}},'{sheet_name}'!{c}:{c})"
+                        for c in matched_cols
+                    )
+                    parts_per_sheet.append(f"({inner})")
+        return parts_per_sheet
+
     def _create_summary_sheet(self, wb, summary_sheet: Dict) -> None:
         """
         Создает итоговый лист.
@@ -201,100 +269,47 @@ class ExcelProcessor:
             [["москва"], ["москва", "заочная"]]
         Имя тега генерится автоматически через "_".
         """
-        if "tag_groups" not in summary_sheet:
-            tag_groups = None
-        else:
-            tag_groups = summary_sheet["tag_groups"]
-
         if summary_sheet["name"] == "None":
             return
 
         # Подготовка итогового листа
-        if summary_sheet["name"] in wb.sheetnames:
-            sheet = wb[summary_sheet["name"]]
-        else:
-            sheet = wb.create_sheet(summary_sheet["name"])
-            if wb.sheetnames[0] != summary_sheet["name"]:
-                self._copy_sheet_structure(wb.worksheets[0], sheet)
+        sheet, start_col_idx, last_row = self._prepare_summary_sheet(wb, summary_sheet)
 
         start_col = self._find_first_empty_column(sheet)
         start_col_idx = column_index_from_string(start_col)
         last_row = sheet.max_row
+        tag_groups = summary_sheet.get("tag_groups", None)
         cond_col = summary_sheet["range_col"]
         crit_col = summary_sheet["criteria_col"]
 
         # --- 1. Обычный режим (по каждому заголовку) ---
         if not tag_groups:
-            all_headers = []
-            for sheet_name in self.common["output_sheets"]["name_aliases"].values():
-                if sheet_name in wb.sheetnames:
-                    source_sheet = wb[sheet_name]
-                    col_idx = column_index_from_string(self.first_col_after_template)
-                    while True:
-                        cell_val = source_sheet.cell(row=1, column=col_idx).value
-                        if not cell_val:
-                            break
-                        if cell_val not in all_headers:
-                            all_headers.append(cell_val)
-                        col_idx += 1
-
+            all_headers = self._collect_headers(wb)
             # Заголовки
             for i, header in enumerate(all_headers, start=start_col_idx):
                 sheet.cell(1, i, header)
-
-            # Формулы SUMIF
+                # Формулы SUMIF
             for col_idx, header in enumerate(all_headers, start=start_col_idx):
                 for row in range(2, last_row + 1):
-                    sumif_parts = []
-                    for sheet_name in self.common["output_sheets"]["name_aliases"].values():
-                        if sheet_name in wb.sheetnames:
-                            src_sheet = wb[sheet_name]
-                            for col in range(column_index_from_string(self.first_col_after_template), src_sheet.max_column + 1):
-                                if src_sheet.cell(1, col).value == header:
-                                    col_letter = get_column_letter(col)
-                                    sumif_parts.append(
-                                        f"SUMIF('{sheet_name}'!${cond_col}:${cond_col},${crit_col}{row},'{sheet_name}'!{col_letter}:{col_letter})"
-                                    )
-                                    break
-                    if sumif_parts:
-                        sheet.cell(row, col_idx, f"={' + '.join(sumif_parts)}")
+                    parts = [p.format(row=row)
+                            for p in self._get_sumif_parts_for_column(wb, header, cond_col, crit_col)]
+                    if parts:  # <-- этот if должен быть ВНУТРИ цикла по row!
+                        sheet.cell(row, col_idx, f"={' + '.join(parts)}")
 
         # --- 2. Групповой режим ---
         else:
-            if not tag_groups:
-                raise ValueError("В групповом режиме необходимо передать tag_groups в виде списка списков ключевых слов")
-
             # Преобразуем [["москва"], ["москва","заочная"]] → {"Москва": ["москва"], "Москва_заочная": ["москва","заочная"]}
             tag_dict = {"_".join(words).title(): words for words in tag_groups}
-
             # Заголовки — названия тегов
             for i, tag_name in enumerate(tag_dict.keys(), start=start_col_idx):
                 sheet.cell(1, i, tag_name)
-
-            # Формулы SUMIF по группам
+                # Формулы SUMIF по группам
             for col_idx, (tag_name, keywords) in enumerate(tag_dict.items(), start=start_col_idx):
                 for row in range(2, last_row + 1):
-                    sheets_sum_parts = []
-                    for sheet_name in self.common["output_sheets"]["name_aliases"].values():
-                        if sheet_name not in wb.sheetnames:
-                            continue
-                        source_sheet = wb[sheet_name]
-                        matched_cols = []
-                        for col in range(column_index_from_string(self.first_col_after_template), source_sheet.max_column + 1):
-                            val = str(source_sheet.cell(1, col).value or "").lower()
-                            if self._header_matches(val, keywords):
-                                matched_cols.append(get_column_letter(col))
-                        if matched_cols:
-                            if len(matched_cols) == 1:
-                                part = f"SUMIF('{sheet_name}'!${cond_col}:${cond_col},${crit_col}{row},'{sheet_name}'!{matched_cols[0]}:{matched_cols[0]})"
-                            else:
-                                part = "(" + " + ".join(
-                                    f"SUMIF('{sheet_name}'!${cond_col}:${cond_col},${crit_col}{row},'{sheet_name}'!{c}:{c})"
-                                    for c in matched_cols
-                                ) + ")"
-                            sheets_sum_parts.append(part)
-                    if sheets_sum_parts:
-                        sheet.cell(row, col_idx, f"={' + '.join(sheets_sum_parts)}")
+                    parts = [p.format(row=row)
+                            for p in self._get_sumif_parts_for_tag(wb, keywords, cond_col, crit_col)]
+                    if parts:  # <-- тоже внутри цикла по row
+                        sheet.cell(row, col_idx, f"={' + '.join(parts)}")
 
     def _header_matches(self, header: str, keywords: list[str]) -> bool:
         """
@@ -327,6 +342,8 @@ class ExcelProcessor:
                      error_replacement: str|int = 0) -> str:
         formula = base_formula
         
+        if "error_handle" in self.common:
+            error_replacement = self.common["error_handle"]
         # Обработка ошибок (поверх обработки NaN)
         if handle_errors:
             formula = f"IFERROR({formula}, {error_replacement})"
