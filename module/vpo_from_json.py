@@ -26,14 +26,12 @@ class ExcelProcessor:
         self.years_data = {k: v for k, v in self.config.items() if k != "common"}
         
         # Установка путей
-        self.template_path = template_path or os.path.join(
-            os.path.dirname(__file__), "templates", "template.xlsx"
-        )
+        base_dir = Path(__file__).resolve().parent
+        self.template_path = Path(template_path or base_dir / "template" / "template.xlsx")
         self.first_col_after_template = None
-        self.output_dir = output_dir or os.path.join(
-            os.path.dirname(os.path.dirname(__file__)), "created_files"
-        )
-        
+        self.output_dir = Path(output_dir or base_dir.parent / "created_files")
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+            
         # Создание папки для результатов
         os.makedirs(self.output_dir, exist_ok=True)
 
@@ -90,28 +88,25 @@ class ExcelProcessor:
             return [year for year in selected_years if year in self.years_data]
         return [selected_years] if selected_years in self.years_data else []
 
-    def _find_files(self, path: str, include_optional: bool) -> List[str]:
+    def _find_files(self, path: str | Path, include_optional: bool) -> List[str]:
         """Находит файлы для обработки с учетом фильтров"""
-        zip_path = path+".zip"
+        path = Path(path)
+        zip_path = path.with_suffix(".zip")
+
         if zipfile.is_zipfile(zip_path):
             with zipfile.ZipFile(zip_path) as z:
-                matched_files = []
-                for zip_info in z.infolist():
-                    if zip_info.is_dir():
-                        continue
-                    
-                    if self._match_patterns(zip_info.filename, include_optional):
-                        extracted_path = z.extract(zip_info, path=os.path.dirname(zip_path))
-                        matched_files.append(extracted_path)
-                
-                return matched_files
-        else:
-            return [
-                os.path.join(root, name)
-                for root, _, files in os.walk(path)
-                for name in files
-                if self._match_patterns(name, include_optional)
-            ]
+                names = [zi for zi in z.infolist() if not zi.is_dir() and self._match_patterns(zi.filename, include_optional)]
+                # Извлекаем в один вызов без перебора в Python-цикле
+                z.extractall(path=zip_path.parent, members=names)
+                return [str(zip_path.parent / n.filename) for n in names]
+
+        # Если обычная папка
+        return [
+            str(Path(root) / name)
+            for root, _, files in os.walk(path)
+            for name in files
+            if self._match_patterns(name, include_optional)
+        ]
 
     def _match_patterns(self, filename: str, include_optional: bool) -> bool:
         """Проверяет соответствие файла шаблонам имен"""
@@ -536,25 +531,6 @@ class ExcelProcessor:
         """Возвращает логический тип по имени листа"""
         reverse_map = {v: k for k, v in self.common["list_aliases"]["aliases"].items()}
         return reverse_map.get(sheet_name, "unknown")
-
-    def _delete_dogs(self, file_name: str):
-        import subprocess
-
-        ps_script = f"""
-        $excel = New-Object -ComObject Excel.Application
-        $excel.Visible = $false
-        $wb = $excel.Workbooks.Open("{file_name}")
-
-        foreach ($sheet in $wb.Worksheets) {{
-            $sheet.UsedRange.Replace("@", "", [Type]::Missing, [Type]::Missing, $false)
-        }}
-
-        $wb.Save()
-        $wb.Close()
-        $excel.Quit()
-        """
-
-        subprocess.run(["powershell", "-Command", ps_script], shell=True)
 
     def _sheet_exists(self, file_path, sheet_name) -> bool:
         xl = pd.ExcelFile(file_path)
