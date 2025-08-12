@@ -185,6 +185,52 @@
                 "mag": "Р2_12(3)"
             }
         }
+    },
+
+    "2015": {
+        "rows_aliases": {
+            "aliases": {
+                "out_of_quota": [2,3],
+                "quota": [5, 6]
+            }
+        },
+        "list_aliases": {
+            "aliases": {
+                "all": "Р2_10",
+                "bak": "None",
+                "spec": "None",
+                "mag": "None"
+            }
+        },
+    "funcs": {
+            "all": {
+                "array": "$A$9:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "C",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 10,
+                    "looup_array": 9,
+                    "match_type": 0
+                }
+            }
+        },
+    "output_sheets": {
+            "name_aliases": {    //optional
+            "all": "Всего_страны",
+            "bak": "None",
+            "spec": "None",
+            "mag": "None"}
+        },
+    "summary_sheet": [
+        { // Для агрегации
+            "name": "Москва_страны_языки", //None if not needed or just dont added
+            "range_col": "B",
+            "criteria_col": "B",
+            "tag_groups": [["москва"], ["москва", "заочная"], ["москва", "очная"], ["москва", "очно-заочная"]]
+        }]
     }
 }
     
