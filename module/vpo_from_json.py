@@ -330,7 +330,7 @@ class ExcelProcessor:
         
         return formula
 
-    def _generate_formulas(self, source_file_path: str, sheet_name: str, params: Dict, level_code: int) -> Dict:
+    def _generate_formulas(self, source_file_path: str, sheet_name: str, params: Dict, level_code: list) -> Dict:
         """
         Генерирует формулу с фильтрацией по level_code (например, B=01)
         """
@@ -376,11 +376,12 @@ class ExcelProcessor:
 
         header_row_range = f"{full_ref}${start_col_letter}${start_row}:${end_col_letter}${start_row}"  # $A$12:$W$12
 
+        level_conditions = " + ".join([f"({edu_col_range}={code})" for code in level_code])
         # AGGREGATE для поиска строки с учётом level_code
         aggregate_part = (
         f"SUMPRODUCT(MAX("
         f"({key_col_range}={row_params['lookup_value']})*"
-        f"({edu_col_range}={level_code})*"
+        f"({level_conditions})*"
         f"ROW({key_col_range})"
         f"))-{start_row-1}"
         )
@@ -425,6 +426,8 @@ class ExcelProcessor:
         for sheet_key, sheet_value in list_aliases.items():
             # Имя листа: если есть в name_aliases — берём его, иначе sheet_key
             sheet_name = name_overrides.get(sheet_key, sheet_key)
+            if sheet_name == "None":
+                continue
             if sheet_name not in new_wb.sheetnames:
                 base_sheet = new_wb.worksheets[0]
                 new_sheet = new_wb.create_sheet(sheet_name)
@@ -462,21 +465,19 @@ class ExcelProcessor:
                 else:
                     code_list = [level_code]
                 
-                for code in code_list:
-                    
-                    formulas = self._generate_formulas(
-                        source_file_path=source_file_path,
-                        sheet_name=sheet_source,
-                        params=params,
-                        level_code=code
-                    )
-                    
-                    # Заполняем
-                    try:
-                        start_col = self._fill_sheet(new_sheet, formulas)
-                        data_columns.setdefault(sheet_name, []).append(start_col)
-                    except Exception as e:
-                        print(f"Ошибка заполнения листа {sheet_name}, столбца {col_key}: {str(e)}")
+                formulas = self._generate_formulas(
+                    source_file_path=source_file_path,
+                    sheet_name=sheet_source,
+                    params=params,
+                    level_code=code_list
+                )
+                
+                # Заполняем
+                try:
+                    start_col = self._fill_sheet(new_sheet, formulas)
+                    data_columns.setdefault(sheet_name, []).append(start_col)
+                except Exception as e:
+                    print(f"Ошибка заполнения листа {sheet_name}, столбца {col_key}: {str(e)}")
 
         return data_columns
 
