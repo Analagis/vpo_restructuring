@@ -120,7 +120,7 @@ class ExcelProcessor:
 
     def _get_output_path(self, year: str) -> str:
         """Генерирует путь для выходного файла"""
-        output_name = f"{year}_{"_".join(Path(self.template_path).stem.split("_")[:-1])}.xlsx" if "output_file_name" not in self.common else f"{year}_{self.common["output_file_name"]}.xlsx"
+        output_name = f"{"_".join(Path(self.template_path).stem.split("_")[:-1])}_{year}.xlsx" if "output_file_name" not in self.common else f"{self.common["output_file_name"]}_{year}.xlsx"
         return os.path.join(self.output_dir, output_name)
 
     def _find_first_empty_column(self, sheet) -> str:
