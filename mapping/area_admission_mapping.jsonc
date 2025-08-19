@@ -1,0 +1,208 @@
+{
+    "common": {
+        "summary_sheet": [{ // For SUMIF
+            "name": "Всего_направления", //None if not needed
+            "range_col": "C",
+            "criteria_col": "A"
+        }],
+
+        "search_patterns": {
+            "required": ["Москва", "СВОД_ВПО1"],
+            "optional": ["заочная", "очная", "очно-заочная"] //optional
+        },
+
+        "rows_aliases": {
+            "aliases": {
+                "bak": [1,4],
+                "spec": [2,5],
+                "mag": [3,6]
+            },  
+            "column": "B",
+            "and_or": "AND"
+        },
+
+        "list_aliases": {
+            "aliases": {
+                "out_of_quota": "Р2_1_1 (2)",  
+                "quota": "Р2_1_4"
+            }
+        },
+        
+        "funcs": {
+            "out_of_quota": {
+                "array": "$A$12:$W$1000",
+                "row_num": {
+                    "lookup_value": "B2",  //col in recipient
+                    "looup_array": "C",   //col in donor
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 24,
+                    "looup_array": 12,
+                    "match_type": 0
+                }
+            },
+            "quota": {
+                "array": "$A$10:$W$600",
+                "row_num": {
+                    "lookup_value": "B2",
+                    "looup_array": "C",
+                    "match_type": 0
+                },
+                "columns_num": {
+                    "lookup_value": 4,
+                    "looup_array": 10,
+                    "match_type": 0
+                }
+            }
+        },
+
+        "output_sheets": {
+                "to_list": "rows_aliases",
+                "to_col":  "list_aliases", //optional
+                "name_aliases": {    //optional
+                "bak": "Бак_направления",
+                "spec": "Специалитет_направления",
+                "mag": "Магистратура_направления"}
+            },
+
+        "error_handle": 0, //errors and nuns replacement in formulas (not work, if source sheet doesnt exist) //optional
+
+        "checking_list_existence": false // turning on slows down work a little bit
+    },
+    
+    // Годовые параметры
+    "2024": {
+    },
+    "2023": {
+    },
+    "2022": {
+        "funcs": {
+            "out_of_quota": {
+                "columns_num": {
+                    "lookup_value": 22
+                }
+            },
+            "quota": {
+                "array": "$A$9:$W$600",
+                "columns_num": {
+                    "looup_array": 9
+                }
+            }
+        }
+    },
+    "2021": {
+        "funcs": {
+            "out_of_quota": {
+                "columns_num": {
+                    "lookup_value": 22
+                }
+            },
+            "quota": {
+                "array": "$A$9:$W$600",
+                "columns_num": {
+                    "looup_array": 9
+                }
+            }
+        }
+    },
+    "2020": {
+        "list_aliases": {
+            "aliases": {
+                "out_of_quota": "None"
+            }
+        },
+        "funcs": {
+            "out_of_quota": {},
+            "quota": {
+                "array": "$A$8:$W$600", //changed
+                "columns_num": {
+                    "looup_array": 8 //changed
+                }
+            }
+        }
+    },
+    "2019": {
+        "list_aliases": {
+            "aliases": {
+                "out_of_quota": "None"
+            }
+        },
+        "funcs": {
+            "out_of_quota": {},
+            "quota": {
+                "array": "$A$8:$W$600", //changed, same with 2020
+                "columns_num": {
+                    "looup_array": 8 //changed, same with 2020
+                }
+            }
+        }
+    },
+    "2018": {
+        "list_aliases": {
+            "aliases": {
+                "out_of_quota": "None"
+            }
+        },
+        "funcs": {
+            "out_of_quota": {},
+            "quota": {
+                "array": "$A$8:$W$600", //changed, same with 2020
+                "columns_num": {
+                    "looup_array": 8 //changed, same with 2020
+                }
+            }
+        }
+    },
+    "2017": {
+        "list_aliases": {
+            "aliases": {
+                "out_of_quota": "None"
+            }
+        },
+        "funcs": {
+            "out_of_quota": {},
+            "quota": {
+                "array": "$A$8:$W$600", //changed, same with 2020
+                "columns_num": {
+                    "looup_array": 8 //changed, same with 2020
+                }
+            }
+        }
+    },
+    "2016": {
+        "list_aliases": {
+            "aliases": {
+                "out_of_quota": "None"
+            }
+        },
+        "funcs": {
+            "out_of_quota": {},
+            "quota": {
+                "array": "$A$9:$W$600",
+                "columns_num": {
+                    "looup_array": 9
+                }
+            }
+        }
+    },
+    "2015": {
+        "list_aliases": {
+            "aliases": {
+                "out_of_quota": "None",  
+                "quota": "Р2_1_3"
+            }
+        },
+        "funcs": {
+            "out_of_quota": {},
+            "quota": {
+                "array": "$A$8:$W$1000",
+                "columns_num": {
+                    "looup_array": 8
+                }
+            }
+        }
+    }
+
+}
+    

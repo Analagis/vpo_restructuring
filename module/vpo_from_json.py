@@ -376,22 +376,36 @@ class ExcelProcessor:
 
         header_row_range = f"{full_ref}${start_col_letter}${start_row}:${end_col_letter}${start_row}"  # $A$12:$W$12
 
-        level_conditions = " + ".join([f"({edu_col_range}={code})" for code in level_code])
-        # AGGREGATE для поиска строки с учётом level_code
-        aggregate_part = (
-        f"SUMPRODUCT(MAX("
-        f"({key_col_range}={row_params['lookup_value']})*"
-        f"({level_conditions})*"
-        f"ROW({key_col_range})"
-        f"))-{start_row-1}"
-        )
-
+        # Выбор логики обработки rows_aliases
+        and_or = self.common["rows_aliases"].get("and_or", "or").lower()
+        
         # Номер столбца
         col_match = f"MATCH({col_params['lookup_value']},{header_row_range},{col_params['match_type']})"
 
-        # Финальная формула
-        formula = f"INDEX({full_ref}{array},{aggregate_part},{col_match})"
-        
+        level_conditions = " + ".join([f"({edu_col_range}={code})" for code in level_code])
+
+        if and_or == "or":
+            # Логика поиска одной строки — OR условия объединяем плюсом
+            aggregate_part = (
+                f"SUMPRODUCT(MAX("
+                f"({key_col_range}={row_params['lookup_value']})*"
+                f"({level_conditions})*"
+                f"ROW({key_col_range})"
+                f"))-{start_row-1}"
+            )
+            formula = f"INDEX({full_ref}{array},{aggregate_part},{col_match})"
+        elif and_or == "and":
+            # Логика суммирования значений для всех подходящих кодов
+            formula = (
+            f"SUMPRODUCT("
+            f"({key_col_range}={row_params['lookup_value']})*"
+            f"({level_conditions}),"
+            f"INDEX({full_ref}{array},0,{col_match})"
+            f")"
+            )
+        else:
+            raise ValueError(f"Unsupported and_or value: {and_or}")
+
         params["row_condition"] = row_params['lookup_value']
         
         return {
