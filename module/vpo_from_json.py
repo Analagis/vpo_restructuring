@@ -453,7 +453,7 @@ class ExcelProcessor:
                 # Получаем параметры                                 
                 params = self.common["funcs"][list_key]
                 # Подпись столбца в итоговом файле
-                params["sheet_col_name"] = (Path(source_filename).stem + "_" + col_key)
+                params["sheet_col_name"] = (Path(source_filename).stem + "_" + col_key).lower()
 
                 # Если "actual_name" переопределяет sheet_source — берём его
                 if isinstance(params.get("actual_name", None), str):
